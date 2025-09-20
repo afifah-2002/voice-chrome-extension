@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Voice Assistant for Accessibility",
+  "version": "1.0",
+  "description": "Voice-controlled Chrome extension for accessibility using Gemini Nano",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Voice Assistant for Accessibility"
+  }
+}
