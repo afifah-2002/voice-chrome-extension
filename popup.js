@@ -1,322 +1,743 @@
-let recognition;
+// // Popup Interface - Voice Assistant Control Panel
+// console.log('🎛️ Loading Voice Assistant Popup Interface...');
+
+// // State management
+// let currentState = {
+//     isActive: false,
+//     isLearning: false,
+//     currentPage: null,
+//     memory: [],
+//     lastAction: null,
+//     initializationComplete: false
+// };
+
+// let hasInitialized = false;
+
+// // Initialize popup interface
+// (async function initializePopup() {
+//     if (hasInitialized) return;
+//     hasInitialized = true;
+    
+//     try {
+//         console.log('🚀 Initializing popup interface...');
+        
+//         // Update status
+//         updateStatus('Setting up interface...');
+        
+//         // Quick setup without complex checks
+//         await setupBasicInterface();
+        
+//         // Set up event listeners
+//         setupEventListeners();
+        
+//         // Load any saved state
+//         await loadSavedState();
+        
+//         // Show ready state
+//         showReadyState();
+        
+//         console.log('✅ Popup interface initialized successfully');
+        
+//     } catch (error) {
+//         console.error('❌ Failed to initialize popup:', error);
+//         showErrorState('Initialization failed');
+//     }
+// })();
+
+// // Basic interface setup
+// async function setupBasicInterface() {
+//     // Update UI elements to ready state
+//     const statusText = document.getElementById('statusText');
+//     if (statusText) {
+//         statusText.textContent = 'Ready';
+//     }
+    
+//     const statusDot = document.getElementById('statusDot');
+//     if (statusDot) {
+//         statusDot.className = 'status-dot active';
+//     }
+    
+//     const voiceButton = document.getElementById('voiceButton');
+//     if (voiceButton) {
+//         voiceButton.classList.remove('disabled');
+//     }
+    
+//     await sleep(100);
+// }
+
+// // Update status message
+// function updateStatus(message) {
+//     const aiStatusText = document.getElementById('aiStatusText');
+//     if (aiStatusText && aiStatusText.textContent !== message) {
+//         aiStatusText.textContent = message;
+//     }
+//     console.log('📱', message);
+// }
+
+// // Show ready state
+// function showReadyState() {
+//     updateStatus('AI Ready (Basic Mode)');
+    
+//     const statusText = document.getElementById('statusText');
+//     if (statusText) {
+//         statusText.textContent = 'Ready';
+//     }
+    
+//     currentState.initializationComplete = true;
+// }
+
+// // Show error state
+// function showErrorState(message) {
+//     updateStatus(`Error: ${message}`);
+    
+//     const statusText = document.getElementById('statusText');
+//     if (statusText) {
+//         statusText.textContent = 'Error';
+//     }
+// }
+
+// // Set up event listeners
+// function setupEventListeners() {
+//     console.log('🎮 Setting up event listeners...');
+    
+//     // Voice button
+//     const voiceButton = document.getElementById('voiceButton');
+//     if (voiceButton) {
+//         voiceButton.addEventListener('click', handleVoiceButtonClick);
+//     }
+    
+//     // Quick action buttons
+//     const actionButtons = document.querySelectorAll('.action-button');
+//     actionButtons.forEach(button => {
+//         button.addEventListener('click', handleActionButtonClick);
+//     });
+    
+//     // Settings toggle
+//     const toggleSettings = document.getElementById('toggleSettings');
+//     if (toggleSettings) {
+//         toggleSettings.addEventListener('click', toggleSettingsPanel);
+//     }
+    
+//     // Save settings
+//     const saveSettings = document.getElementById('saveSettings');
+//     if (saveSettings) {
+//         saveSettings.addEventListener('click', saveSettingsHandler);
+//     }
+    
+//     // Reset memory
+//     const resetMemory = document.getElementById('resetMemory');
+//     if (resetMemory) {
+//         resetMemory.addEventListener('click', resetMemoryHandler);
+//     }
+    
+//     // Demo button
+//     const startDemo = document.getElementById('startDemo');
+//     if (startDemo) {
+//         startDemo.addEventListener('click', startDemoHandler);
+//     }
+    
+//     // Footer links
+//     const viewMemory = document.getElementById('viewMemory');
+//     if (viewMemory) {
+//         viewMemory.addEventListener('click', viewMemoryHandler);
+//     }
+    
+//     const exportData = document.getElementById('exportData');
+//     if (exportData) {
+//         exportData.addEventListener('click', exportDataHandler);
+//     }
+    
+//     console.log('✅ Event listeners set up');
+// }
+
+// // Handle voice button click
+// async function handleVoiceButtonClick() {
+//     try {
+//         const voiceButton = document.getElementById('voiceButton');
+//         const voiceText = voiceButton.querySelector('.voice-text');
+        
+//         if (!currentState.isLearning) {
+//             // Start voice recognition
+//             updateStatus('Starting voice recognition...');
+            
+//             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+//             // Check if we're on a restricted page
+//         if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+//             showNotification('Cannot use voice commands on Chrome internal pages. Navigate to a regular website first.', 'error');
+//             return;
+//         }
+            
+//             // Check if we can communicate with content script
+//             try {
+//                 const response = await sendMessageWithTimeout(tab.id, { action: 'startVoiceLearning' });
+                
+//                 if (response && response.success) {
+//                     currentState.isLearning = true;
+//                     voiceButton.classList.add('active');
+//                     voiceText.textContent = 'Stop Listening';
+//                     updateStatus('Voice recognition active - say "hey chrome"');
+//                     showNotification('Voice recognition started!', 'success');
+//                 } else {
+//                     throw new Error('Content script not responding');
+//                 }
+//             } catch (error) {
+//                 // Fallback: try to inject content script
+//                 console.log('Injecting content script...');
+//                 await chrome.scripting.executeScript({
+//                     target: { tabId: tab.id },
+//                     files: ['content.js']
+//                 });
+                
+//                 await sleep(1000);
+                
+//                 const response = await sendMessageWithTimeout(tab.id, { action: 'startVoiceLearning' });
+//                 if (response && response.success) {
+//                     currentState.isLearning = true;
+//                     voiceButton.classList.add('active');
+//                     voiceText.textContent = 'Stop Listening';
+//                     updateStatus('Voice recognition active');
+//                     showNotification('Voice recognition started!', 'success');
+//                 } else {
+//                     throw new Error('Failed to start voice recognition');
+//                 }
+//             }
+//         } else {
+//             // Stop voice recognition
+//             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+//             await sendMessageWithTimeout(tab.id, { action: 'stopVoiceLearning' });
+            
+//             currentState.isLearning = false;
+//             voiceButton.classList.remove('active');
+//             voiceText.textContent = 'Start Listening';
+//             updateStatus('Voice recognition stopped');
+//             showNotification('Voice recognition stopped', 'info');
+//         }
+        
+//         await saveState();
+        
+//     } catch (error) {
+//         console.error('Voice button error:', error);
+//         updateStatus('Voice recognition failed');
+//         showNotification('Failed to start voice recognition. Try on a regular website.', 'error');
+//     }
+// }
+
+// // Handle action button clicks
+// async function handleActionButtonClick(event) {
+//     const command = event.currentTarget.dataset.command;
+//     console.log('Action button clicked:', command);
+    
+//     try {
+//         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+//         switch (command) {
+//             case 'search':
+//                 await sendMessageWithTimeout(tab.id, { 
+//                     action: 'performAction', 
+//                     actionData: { type: 'search' }
+//                 });
+//                 showNotification('Search activated', 'success');
+//                 break;
+                
+//             case 'read':
+//                 await sendMessageWithTimeout(tab.id, { 
+//                     action: 'performAction', 
+//                     actionData: { type: 'read' }
+//                 });
+//                 showNotification('Reading page content', 'success');
+//                 break;
+                
+//             case 'navigate':
+//                 showNotification('Say "hey chrome, go to [website]"', 'info');
+//                 break;
+                
+//             case 'help':
+//                 showHelpInfo();
+//                 break;
+//         }
+//     } catch (error) {
+//         console.error('Action failed:', error);
+//         showNotification('Action failed - try on a regular website', 'error');
+//     }
+// }
+
+// // Toggle settings panel
+// function toggleSettingsPanel() {
+//     const settingsContent = document.getElementById('settingsContent');
+//     if (settingsContent) {
+//         const isVisible = settingsContent.style.display !== 'none';
+//         settingsContent.style.display = isVisible ? 'none' : 'block';
+//     }
+// }
+
+// // Save settings
+// async function saveSettingsHandler() {
+//     try {
+//         const settings = {
+//             voiceEnabled: document.getElementById('voiceEnabled')?.checked ?? true,
+//             learningEnabled: document.getElementById('learningEnabled')?.checked ?? true,
+//             wakeWord: document.getElementById('wakeWord')?.value ?? 'hey chrome',
+//             feedbackLevel: document.getElementById('feedbackLevel')?.value ?? 'medium'
+//         };
+        
+//         await chrome.storage.local.set({ voiceAssistantSettings: settings });
+//         showNotification('Settings saved!', 'success');
+        
+//     } catch (error) {
+//         console.error('Failed to save settings:', error);
+//         showNotification('Failed to save settings', 'error');
+//     }
+// }
+
+// // Reset memory
+// async function resetMemoryHandler() {
+//     if (confirm('Are you sure you want to reset all learned data?')) {
+//         try {
+//             await chrome.storage.local.clear();
+//             currentState.memory = [];
+//             showNotification('Memory reset complete!', 'success');
+//         } catch (error) {
+//             console.error('Failed to reset memory:', error);
+//             showNotification('Failed to reset memory', 'error');
+//         }
+//     }
+// }
+
+// // Start demo
+// function startDemoHandler() {
+//     const demoCommands = [
+//         '"Hey Chrome, search for something"',
+//         '"Hey Chrome, read this page"',
+//         '"Hey Chrome, find the login button"'
+//     ];
+    
+//     showNotification(`Try these commands: ${demoCommands[0]}`, 'info');
+// }
+
+// // View memory
+// async function viewMemoryHandler() {
+//     try {
+//         const result = await chrome.storage.local.get(null);
+//         console.log('Current memory:', result);
+//         showNotification('Memory data logged to console', 'info');
+//     } catch (error) {
+//         console.error('Failed to view memory:', error);
+//         showNotification('Failed to view memory', 'error');
+//     }
+// }
+
+// // Export data
+// async function exportDataHandler() {
+//     try {
+//         const result = await chrome.storage.local.get(null);
+//         const dataStr = JSON.stringify(result, null, 2);
+//         const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+//         const url = URL.createObjectURL(dataBlob);
+//         const a = document.createElement('a');
+//         a.href = url;
+//         a.download = 'voice-assistant-data.json';
+//         a.click();
+        
+//         URL.revokeObjectURL(url);
+//         showNotification('Data exported successfully!', 'success');
+        
+//     } catch (error) {
+//         console.error('Failed to export data:', error);
+//         showNotification('Failed to export data', 'error');
+//     }
+// }
+
+// // Show help information
+// function showHelpInfo() {
+//     const helpText = `
+// Voice Commands:
+// • "Hey Chrome, search for [term]"
+// • "Hey Chrome, scroll down/up"
+// • "Hey Chrome, click [button name]"
+// • "Hey Chrome, read this page"
+// • "Hey Chrome, go to [website]"
+//     `;
+    
+//     showNotification('Help info logged to console', 'info');
+//     console.log(helpText);
+// }
+
+// // Send message with timeout
+// function sendMessageWithTimeout(tabId, message, timeout = 3000) {
+//     return new Promise((resolve, reject) => {
+//         const timer = setTimeout(() => {
+//             reject(new Error('Message timeout'));
+//         }, timeout);
+        
+//         chrome.tabs.sendMessage(tabId, message, (response) => {
+//             clearTimeout(timer);
+//             if (chrome.runtime.lastError) {
+//                 reject(new Error(chrome.runtime.lastError.message));
+//             } else {
+//                 resolve(response);
+//             }
+//         });
+//     });
+// }
+
+// // Load saved state
+// async function loadSavedState() {
+//     try {
+//         const result = await chrome.storage.local.get(['voiceAssistantState', 'voiceAssistantSettings']);
+        
+//         if (result.voiceAssistantState) {
+//             currentState = { ...currentState, ...result.voiceAssistantState };
+//         }
+        
+//         if (result.voiceAssistantSettings) {
+//             const settings = result.voiceAssistantSettings;
+            
+//             const voiceEnabled = document.getElementById('voiceEnabled');
+//             if (voiceEnabled) voiceEnabled.checked = settings.voiceEnabled ?? true;
+            
+//             const learningEnabled = document.getElementById('learningEnabled');
+//             if (learningEnabled) learningEnabled.checked = settings.learningEnabled ?? true;
+            
+//             const wakeWord = document.getElementById('wakeWord');
+//             if (wakeWord) wakeWord.value = settings.wakeWord ?? 'hey chrome';
+            
+//             const feedbackLevel = document.getElementById('feedbackLevel');
+//             if (feedbackLevel) feedbackLevel.value = settings.feedbackLevel ?? 'medium';
+//         }
+        
+//         console.log('✅ Loaded saved state');
+        
+//     } catch (error) {
+//         console.error('Failed to load saved state:', error);
+//     }
+// }
+
+// // Save current state
+// async function saveState() {
+//     try {
+//         await chrome.storage.local.set({ voiceAssistantState: currentState });
+//     } catch (error) {
+//         console.error('Failed to save state:', error);
+//     }
+// }
+
+// // Show notification
+// function showNotification(message, type = 'info') {
+//     // Remove existing notifications
+//     const existing = document.querySelectorAll('.notification');
+//     existing.forEach(n => n.remove());
+    
+//     // Create new notification
+//     const notification = document.createElement('div');
+//     notification.className = `notification ${type}`;
+//     notification.textContent = message;
+    
+//     document.body.appendChild(notification);
+    
+//     // Auto-remove after 3 seconds
+//     setTimeout(() => {
+//         if (notification.parentNode) {
+//             notification.parentNode.removeChild(notification);
+//         }
+//     }, 3000);
+    
+//     console.log(`📱 ${type.toUpperCase()}: ${message}`);
+// }
+
+// // Utility function
+// function sleep(ms) {
+//     return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
+// // Initialize stats display
+// setInterval(async () => {
+//     try {
+//         const result = await chrome.storage.local.get(null);
+//         const stats = result.voiceAssistantStats || {};
+        
+//         const sitesLearned = document.getElementById('sitesLearned');
+//         if (sitesLearned) sitesLearned.textContent = stats.sitesLearned || 0;
+        
+//         const commandsExecuted = document.getElementById('commandsExecuted');
+//         if (commandsExecuted) commandsExecuted.textContent = stats.commandsExecuted || 0;
+        
+//         const successRate = document.getElementById('successRate');
+//         if (successRate) {
+//             const rate = stats.successRate || 0;
+//             successRate.textContent = Math.round(rate * 100) + '%';
+//         }
+//     } catch (error) {
+//         // Ignore errors in stats update
+//     }
+// }, 5000);
+
+// console.log('🎛️ Popup interface script loaded');
+
+// Simple Voice Assistant Popup
+console.log('🎤 Voice Assistant Popup Loading...');
+
 let isListening = false;
-let aiSession = null;
+let hasInitialized = false;
 
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Voice Assistant loaded - initializing Gemini Nano...');
+// Initialize popup
+(async function initializePopup() {
+    if (hasInitialized) return;
+    hasInitialized = true;
     
-    const startButton = document.getElementById('startListening');
-    const statusDiv = document.getElementById('status');
-    const transcriptDiv = document.getElementById('transcript');
-
-    // Check if elements exist
-    if (!startButton || !statusDiv || !transcriptDiv) {
-        console.error('Required elements not found');
-        return;
-    }
-
-    // Initialize Gemini Nano
-    await initializeGeminiNano();
-
-    // Check if speech recognition is supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-        console.error('Speech recognition not supported');
-        statusDiv.textContent = 'Speech recognition not supported';
-        startButton.disabled = true;
-        return;
-    }
-
-    // Initialize speech recognition
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = function() {
-        console.log('Speech recognition started');
-        isListening = true;
-        statusDiv.textContent = 'Listening...';
-        startButton.textContent = '🛑 Stop Listening';
-        startButton.style.backgroundColor = '#dc3545';
-    };
-
-    recognition.onresult = function(event) {
-        let interimTranscript = '';
-        let finalTranscript = '';
+    try {
+        console.log('🚀 Initializing popup...');
         
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            
-            if (event.results[i].isFinal) {
-                finalTranscript += transcript;
-            } else {
-                interimTranscript += transcript;
-            }
-        }
+        updateStatus('Setting up...');
         
-        // Show interim results in gray, final in black
-        transcriptDiv.innerHTML = finalTranscript + 
-            '<span style="color: #999;">' + interimTranscript + '</span>';
+        // Set up event listeners
+        setupEventListeners();
         
-        // Only process final results with Gemini Nano
-        if (finalTranscript.trim()) {
-            processVoiceCommandWithAI(finalTranscript.trim());
-        }
-    };
-
-    recognition.onerror = function(event) {
-        console.error('Speech recognition error:', event.error);
-        statusDiv.textContent = 'Error: ' + event.error;
+        // Check if we can run on current page
+        const canRun = await checkPageCompatibility();
         
-        if (event.error === 'not-allowed') {
-            statusDiv.textContent = 'Microphone access denied. Please allow microphone access.';
-        } else if (event.error === 'no-speech') {
-            statusDiv.textContent = 'No speech detected. Try again.';
-        }
-        
-        resetButton();
-    };
-
-    recognition.onend = function() {
-        console.log('Speech recognition ended');
-        resetButton();
-    };
-
-    startButton.addEventListener('click', function() {
-        console.log('Button clicked, isListening:', isListening);
-        
-        if (isListening) {
-            recognition.stop();
+        if (canRun) {
+            showReadyState();
         } else {
-            try {
-                recognition.start();
-                console.log('Starting speech recognition...');
-            } catch (error) {
-                console.error('Error starting recognition:', error);
-                statusDiv.textContent = 'Error: ' + error.message;
-            }
+            showRestrictedPageState();
         }
-    });
-
-    function resetButton() {
-        isListening = false;
-        statusDiv.textContent = aiSession ? 'Ready to listen... (AI Ready)' : 'Ready to listen... (AI Loading)';
-        startButton.textContent = '🎤 Start Listening';
-        startButton.style.backgroundColor = '#4285f4';
+        
+        console.log('✅ Popup initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Popup initialization failed:', error);
+        showErrorState('Initialization failed');
     }
+})();
 
-    async function initializeGeminiNano() {
-        try {
-            // Check if Prompt API is available
-            if (!('LanguageModel' in window)) {
-                statusDiv.textContent = 'Gemini Nano not available. Enable flags in chrome://flags';
-                console.error('LanguageModel API not available');
-                return;
-            }
-
-            statusDiv.textContent = 'Checking AI availability...';
-            
-            // Check availability
-            const availability = await LanguageModel.availability();
-            console.log('AI availability:', availability);
-
-            if (availability === 'no') {
-                statusDiv.textContent = 'AI not supported on this device';
-                return;
-            }
-
-            if (availability === 'downloadable') {
-                statusDiv.textContent = 'Downloading AI model... (this may take a few minutes)';
-            } else if (availability === 'downloading') {
-                statusDiv.textContent = 'AI model downloading...';
-            }
-
-            // Create AI session
-            aiSession = await LanguageModel.create({
-                monitor(m) {
-                    m.addEventListener('downloadprogress', (e) => {
-                        const percent = Math.round(e.loaded / e.total * 100);
-                        statusDiv.textContent = `Downloading AI model: ${percent}%`;
-                        console.log(`Downloaded ${percent}%`);
-                    });
-                }
-            });
-
-            console.log('Gemini Nano session created successfully');
-            statusDiv.textContent = 'AI Ready! Click to start voice commands.';
-            
-        } catch (error) {
-            console.error('Failed to initialize Gemini Nano:', error);
-            statusDiv.textContent = 'AI initialization failed. Using basic commands.';
-        }
+// Set up event listeners
+function setupEventListeners() {
+    const voiceButton = document.getElementById('voiceButton');
+    if (voiceButton) {
+        voiceButton.addEventListener('click', handleVoiceButtonClick);
+        console.log('✅ Voice button listener added');
     }
-
-    async function processVoiceCommandWithAI(command) {
-        console.log('Processing voice command with AI:', command);
-        statusDiv.textContent = 'AI is thinking...';
-
-        try {
-            if (!aiSession) {
-                // Fallback to basic command processing
-                processBasicCommand(command);
-                return;
-            }
-
-            // Create a smart prompt for Gemini Nano
-            const prompt = `
-You are an accessibility assistant that helps users navigate the web with voice commands. 
-
-The user said: "${command}"
-
-Analyze this command and respond with a JSON object containing the user's intent. Use this exact format:
-
-{
-  "command": "action_type",
-  "target": "website_or_element", 
-  "query": "search_term_if_applicable",
-  "confidence": "high|medium|low"
 }
 
-Available commands:
-- "search" (for searching on websites like Google, YouTube, etc.)
-- "navigate" (for opening websites or pages)
-- "open_document" (for opening Google Docs, Drive files)
-- "scroll" (for scrolling up/down)
-- "click" (for clicking elements)
-- "read" (for reading page content)
-- "unclear" (if the command is not clear)
-
-Examples:
-- "open Google Docs" → {"command": "navigate", "target": "docs.google.com", "query": "", "confidence": "high"}
-- "search for cats on YouTube" → {"command": "search", "target": "youtube", "query": "cats", "confidence": "high"}
-- "scroll down" → {"command": "scroll", "target": "down", "query": "", "confidence": "high"}
-- "find my last document" → {"command": "open_document", "target": "drive", "query": "recent", "confidence": "medium"}
-
-Respond only with the JSON object, no other text.`;
-
-            const response = await aiSession.prompt(prompt);
-            console.log('AI response:', response);
-
-            // Parse AI response
-            let parsedCommand;
-            try {
-                // Clean the response and parse JSON
-                const cleanResponse = response.trim().replace(/```json\n?|\n?```/g, '');
-                parsedCommand = JSON.parse(cleanResponse);
-            } catch (parseError) {
-                console.error('Failed to parse AI response:', parseError);
-                processBasicCommand(command);
+// Handle voice button click
+async function handleVoiceButtonClick() {
+    try {
+        const voiceButton = document.getElementById('voiceButton');
+        const voiceText = voiceButton.querySelector('.voice-text');
+        
+        if (!isListening) {
+            // Start voice recognition
+            updateAIStatus('Starting voice recognition...');
+            
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            // Check for restricted pages
+            if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+                showNotification('Cannot use voice commands on Chrome internal pages. Navigate to a regular website first.', 'error');
                 return;
             }
-
-            // Execute the AI-parsed command
-            executeAICommand(parsedCommand, command);
-
-        } catch (error) {
-            console.error('AI processing failed:', error);
-            statusDiv.textContent = 'AI error, using basic processing...';
-            processBasicCommand(command);
-        }
-    }
-
-    function executeAICommand(parsedCommand, originalCommand) {
-        console.log('Executing AI command:', parsedCommand);
-        
-        const { command, target, query, confidence } = parsedCommand;
-        
-        // Show confidence in status
-        statusDiv.textContent = `Executing (${confidence} confidence): ${originalCommand}`;
-
-        // Execute based on AI understanding
-        switch (command) {
-            case 'navigate':
-                if (target.includes('docs.google') || target.includes('google docs')) {
-                    openGoogleDocs();
-                } else if (target.includes('youtube')) {
-                    window.open('https://youtube.com', '_blank');
-                } else if (target.includes('google')) {
-                    window.open('https://google.com', '_blank');
-                } else {
-                    window.open(`https://${target}`, '_blank');
+            
+            // Test if content script responds
+            let contentScriptReady = false;
+            try {
+                const pingResponse = await sendMessageWithTimeout(tab.id, { action: 'ping' }, 1000);
+                contentScriptReady = pingResponse && pingResponse.pong;
+            } catch (e) {
+                console.log('Content script not responding, injecting...');
+            }
+            
+            // Inject if not ready
+            if (!contentScriptReady) {
+                updateAIStatus('Loading voice recognition...');
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['content.js']
+                });
+                await sleep(2000);
+                
+                // Test again
+                const pingResponse = await sendMessageWithTimeout(tab.id, { action: 'ping' }, 1000);
+                if (!pingResponse || !pingResponse.pong) {
+                    throw new Error('Content script injection failed');
                 }
-                break;
-                
-            case 'search':
-                if (target === 'youtube') {
-                    window.open(`https://youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
-                } else if (target === 'google') {
-                    window.open(`https://google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-                } else {
-                    window.open(`https://google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-                }
-                break;
-                
-            case 'open_document':
-                openGoogleDocs();
-                break;
-                
-            case 'scroll':
-                sendToContentScript({
-                    action: 'scroll',
-                    direction: target
-                });
-                break;
-                
-            case 'click':
-                sendToContentScript({
-                    action: 'click',
-                    target: target
-                });
-                break;
-                
-            case 'read':
-                sendToContentScript({
-                    action: 'read',
-                    target: target
-                });
-                break;
-                
-            default:
-                statusDiv.textContent = `Command understood but not implemented: ${command}`;
-        }
-    }
-
-    function processBasicCommand(command) {
-        console.log('Processing with basic commands:', command);
-        const lowerCommand = command.toLowerCase();
-        
-        if (lowerCommand.includes('google') && (lowerCommand.includes('doc') || lowerCommand.includes('document'))) {
-            openGoogleDocs();
-            statusDiv.textContent = 'Opening Google Docs...';
-        } else if (lowerCommand.includes('youtube')) {
-            window.open('https://youtube.com', '_blank');
-            statusDiv.textContent = 'Opening YouTube...';
-        } else if (lowerCommand.includes('scroll down')) {
-            sendToContentScript({ action: 'scroll', direction: 'down' });
-            statusDiv.textContent = 'Scrolling down...';
-        } else if (lowerCommand.includes('scroll up')) {
-            sendToContentScript({ action: 'scroll', direction: 'up' });
-            statusDiv.textContent = 'Scrolling up...';
+            }
+            
+            // Start voice recognition
+            const response = await sendMessageWithTimeout(tab.id, { action: 'startVoiceLearning' });
+            if (response && response.success) {
+                isListening = true;
+                voiceButton.classList.add('active');
+                voiceButton.classList.remove('disabled');
+                voiceText.textContent = 'Stop Listening';
+                updateStatus('Listening...');
+                updateAIStatus('Voice recognition active - say "hey chrome [command]"');
+                showNotification('Voice recognition started! Say "hey chrome" followed by your command.', 'success');
+            } else {
+                throw new Error('Failed to start voice recognition');
+            }
+            
         } else {
-            statusDiv.textContent = `Command received: ${command}`;
+            // Stop voice recognition
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            await sendMessageWithTimeout(tab.id, { action: 'stopVoiceLearning' });
+            
+            isListening = false;
+            voiceButton.classList.remove('active');
+            voiceText.textContent = 'Start Listening';
+            updateStatus('Ready');
+            updateAIStatus('Voice recognition stopped');
+            showNotification('Voice recognition stopped', 'info');
         }
+        
+    } catch (error) {
+        console.error('Voice button error:', error);
+        updateStatus('Error');
+        updateAIStatus('Voice recognition failed');
+        showNotification('Failed to start voice recognition. Make sure you\'re on a regular website.', 'error');
+        
+        // Reset button state
+        const voiceButton = document.getElementById('voiceButton');
+        const voiceText = voiceButton.querySelector('.voice-text');
+        isListening = false;
+        voiceButton.classList.remove('active');
+        voiceText.textContent = 'Start Listening';
     }
+}
 
-    function openGoogleDocs() {
-        window.open('https://docs.google.com', '_blank');
+// Check page compatibility
+async function checkPageCompatibility() {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        if (!tab) {
+            return false;
+        }
+        
+        // Check for restricted URLs
+        const restrictedPatterns = [
+            'chrome://',
+            'chrome-extension://',
+            'moz-extension://',
+            'edge://',
+            'about:',
+            'file://'
+        ];
+        
+        const isRestricted = restrictedPatterns.some(pattern => 
+            tab.url.startsWith(pattern)
+        );
+        
+        return !isRestricted;
+        
+    } catch (error) {
+        console.error('Error checking page compatibility:', error);
+        return false;
     }
+}
 
-    function sendToContentScript(message) {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs && tabs[0]) {
-                chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
-                    if (chrome.runtime.lastError) {
-                        console.error('Error sending message:', chrome.runtime.lastError.message);
-                    }
-                });
+// Show ready state
+function showReadyState() {
+    updateStatus('Ready');
+    updateAIStatus('AI Ready - Click button to start listening');
+    
+    const statusDot = document.getElementById('statusDot');
+    if (statusDot) {
+        statusDot.classList.add('active');
+    }
+    
+    const voiceButton = document.getElementById('voiceButton');
+    if (voiceButton) {
+        voiceButton.classList.remove('disabled');
+    }
+}
+
+// Show restricted page state
+function showRestrictedPageState() {
+    updateStatus('Restricted Page');
+    updateAIStatus('Cannot run on Chrome internal pages - navigate to a regular website');
+    
+    const voiceButton = document.getElementById('voiceButton');
+    if (voiceButton) {
+        voiceButton.classList.add('disabled');
+    }
+    
+    showNotification('Navigate to a regular website to use voice commands', 'info');
+}
+
+// Show error state
+function showErrorState(message) {
+    updateStatus('Error');
+    updateAIStatus(`Error: ${message}`);
+    
+    const voiceButton = document.getElementById('voiceButton');
+    if (voiceButton) {
+        voiceButton.classList.add('disabled');
+    }
+}
+
+// Update status text
+function updateStatus(message) {
+    const statusText = document.getElementById('statusText');
+    if (statusText) {
+        statusText.textContent = message;
+    }
+    console.log('📱 Status:', message);
+}
+
+// Update AI status text
+function updateAIStatus(message) {
+    const aiStatusText = document.getElementById('aiStatusText');
+    if (aiStatusText) {
+        aiStatusText.textContent = message;
+    }
+    console.log('🤖 AI Status:', message);
+}
+
+// Send message with timeout
+function sendMessageWithTimeout(tabId, message, timeout = 3000) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error('Message timeout'));
+        }, timeout);
+        
+        chrome.tabs.sendMessage(tabId, message, (response) => {
+            clearTimeout(timer);
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(response);
             }
         });
-    }
-});
+    });
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existing = document.querySelectorAll('.notification');
+    existing.forEach(n => n.remove());
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 4000);
+    
+    console.log(`📱 ${type.toUpperCase()}: ${message}`);
+}
+
+// Utility function
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+console.log('🎤 Voice Assistant Popup Ready');
